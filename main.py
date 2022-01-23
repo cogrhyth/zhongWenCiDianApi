@@ -7,10 +7,14 @@ application = Flask(__name__)
 
 @application.route("/words", methods=["POST"])
 def add_word():
+
     if request.method == "POST":
-        english = request.form["english"]
-        pinyin = request.form["pinyin"]
-        han_zi = request.form["hanzi"]
+
+        word = request.get_json()
+
+        english = word["english"]
+        pinyin = word["pinyin"]
+        han_zi = word["hanzi"]
 
         dictionary = {"english": english, "pinyin": pinyin, "hanzi": han_zi}
         json_data = json.dumps(dictionary)
