@@ -15,7 +15,7 @@ elif environment == "production":
     password = "dc05314f8526ebf29d5974070e85dad77e1745651a6b9473f84f16dd74e324f3"
     dns = "ec2-54-216-17-9.eu-west-1.compute.amazonaws.com:5432"
     database = "d6kr4k8ud0v7c7"
-    application.config["SQLALCHEMY_DATABASE_URI"] = f"postgres://{user}:{password}@{dns}/{database}"
+    application.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{user}:{password}@{dns}/{database}"
 
 application.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 database = SQLAlchemy(application)
