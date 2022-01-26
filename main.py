@@ -66,7 +66,7 @@ def manipulate_dictionary():
 
         word = json.dumps({"word": word})
 
-        return json_data, 200
+        return word, 200
 
 
 if __name__ == "__main__":
