@@ -35,7 +35,7 @@ class Word(database.Model):
 
 
 @application.route("/words", methods=["POST", "GET"])
-def word():
+def manipulate_dictionary():
 
     if request.method == "POST":
 
@@ -61,6 +61,10 @@ def word():
         data_set3 = {"Page": "Home", "Message": "Successfully loaded the Home page", "Timestamp": time.time()}
         data_sets = {"first": data_set1, "second": data_set2, "third": data_set3}
         json_data = json.dumps(data_sets)
+
+        word = Word.query.filter_by(english="Hello").first()
+
+        word = json.dumps({"word": word})
 
         return json_data, 200
 
