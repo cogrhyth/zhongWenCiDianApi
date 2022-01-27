@@ -62,11 +62,11 @@ def manipulate_dictionary():
         data_sets = {"first": data_set1, "second": data_set2, "third": data_set3}
         json_data = json.dumps(data_sets)
 
-        word = Word.query.filter_by(english="Hello").first()
+        # word = database.session.query(Word).all()
 
-        word = json.dumps({"word": word})
+        # word = json.dumps({"word": word})
 
-        return word, 200
+        return json.dumps({"word": "wordVariableContent"}), 200
 
 
 if __name__ == "__main__":
