@@ -5,7 +5,7 @@ UPLOAD_FOLDER = "../resources"
 ALLOWED_EXTENSIONS = {"txt", "pdf", "png", "jpg", "jpeg", "gif"}
 
 application = Flask(__name__)
-environment = "development"
+environment = "production"
 
 application.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
