@@ -3,7 +3,6 @@ from database.database import initialize_database, database
 from models.word import Word
 from flask import request, send_from_directory
 from werkzeug.utils import secure_filename
-import json
 import os
 
 initialize_database(application)
@@ -53,8 +52,12 @@ def initialize_word(new_word):
     data = {"english": new_word.english, "pinyin": new_word.pinyin, "plainPinyin": new_word.plain_pinyin,
             "hanzi": new_word.han_zi, "image": new_word.image, "mimetype": new_word.mimetype}
 
-    json_data = json.dumps(data)
-    return json_data, 200
+    return data, 200
+
+
+def image_not_exist(image):
+
+    return database.session.query(Word).filter(Word.image == image).count() == 0
 
 
 def not_exist(english):
@@ -79,12 +82,30 @@ def insert_word(form):
         return {"message": f"The word '{english}' already exists in the database"}, 409
 
 
-@application.route("/words", methods=["POST", "GET", "DELETE"])
-def manipulate_dictionary():
+def check_the_problem(image_is_unique, word_is_unique, english, image):
+
+    if not image_is_unique and not word_is_unique:
+
+        return {"message": f"both the word '{english}' "
+                           f"and the image '{image}' already exist in the database"}, 409
+    elif not word_is_unique:
+
+        return {"message": f"the word '{english}' already exists in the database"}, 409
+    elif not image_is_unique:
+
+        return {"message": f"the image '{image}' already exists in the database"}, 409
+    else:
+
+        return {"message": f"the name '{image}' is not allowed"}, 409
+
+
+@application.route("/words", methods=["POST"])
+def post_word():
 
     if request.method == "POST":
 
         form = request.form
+        image_file = request.files["image"]
 
         try:
 
@@ -92,23 +113,30 @@ def manipulate_dictionary():
             pinyin = form["pinyin"]
             plain_pinyin = form["plain_pinyin"]
             han_zi = form["hanzi"]
-            image = request.files["image"].read()
+            image = secure_filename(image_file.filename)
             mimetype = request.files["image"].mimetype
 
-            if not_exist(english):
+            image_is_unique = image_not_exist(image)
+            word_is_unique = not_exist(english)
+
+            if image_is_unique and word_is_unique and is_allowed(image):
+
+                image_file.save(os.path.join(application.config["UPLOAD_FOLDER"], image))
 
                 new_word = Word(english, pinyin, plain_pinyin, han_zi, image, mimetype)
                 return initialize_word(new_word)
 
             else:
-
-                return {"message": f"the word '{english}' already exists in the database"}, 409
+                return check_the_problem(image_is_unique, word_is_unique, english, image)
 
         except KeyError:
-
             return insert_word(form)
 
-    elif request.method == "GET":
+
+@application.route("/words", methods=["GET"])
+def get_words():
+
+    if request.method == "GET":
 
         words = Word.query.all()
         words_list = []
@@ -120,18 +148,50 @@ def manipulate_dictionary():
             pinyin = word.pinyin
             plain_pinyin = word.plain_pinyin
             han_zi = word.han_zi
+            image = word.image
+            mimetype = word.mimetype
 
             word_dict = {
                 "wordIdentification": word_id, "english": english, "pinyin": pinyin,
-                "plainPinyin": plain_pinyin, "hanZi": han_zi
+                "plainPinyin": plain_pinyin, "hanZi": han_zi, "image": image, "mimetype": mimetype
             }
-            json_word = json.dumps(word_dict)
 
-            words_list.append(json_word)
+            words_list.append(word_dict)
 
-        return str(words_list), 200
+        return {"dictionary": words_list}, 200
 
-    elif request.method == "DELETE":
+
+@application.route("/words/<word_id>", methods=["PUT"])
+def update_word(word_id):
+
+    if request.method == "PUT":
+
+        body = request.get_json()
+
+        english = body["english"]
+        pinyin = body["pinyin"]
+        plain_pinyin = body["plain_pinyin"]
+        han_zi = body["hanzi"]
+
+        queried_word = database.session.query(Word).filter(Word.word_identification == word_id).first()
+
+        queried_word.english = english
+        queried_word.pinyin = pinyin
+        queried_word.plain_pinyin = plain_pinyin
+        queried_word.han_zi = han_zi
+
+        database.session.commit()
+
+        data = {"english": english, "pinyin": pinyin, "plainPinyin": plain_pinyin,
+                "hanzi": han_zi, "image": queried_word.image, "mimetype": queried_word.mimetype}
+
+        return data, 200
+
+
+@application.route("/words", methods=["DELETE"])
+def delete_word():
+
+    if request.method == "DELETE":
 
         body = request.get_json()
 

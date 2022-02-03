@@ -1,7 +1,7 @@
 from flask import Flask
 
 
-UPLOAD_FOLDER = "../resources"
+UPLOAD_FOLDER = "./resources"
 ALLOWED_EXTENSIONS = {"txt", "pdf", "png", "jpg", "jpeg", "gif"}
 
 application = Flask(__name__)
