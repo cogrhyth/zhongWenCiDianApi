@@ -32,7 +32,10 @@ def post_image():
         if image and is_allowed(image.filename):
 
             image_name = secure_filename(image.filename)
-            image.save(os.path.join(application.config["UPLOAD_FOLDER"], image_name))
+
+            resources = os.path.join(application.root_path, application.config["UPLOAD_FOLDER"])
+
+            image.save(os.path.join(resources, image_name))
             return "The file was uploaded", 200
 
 
@@ -82,18 +85,12 @@ def insert_word(form):
         return {"message": f"The word '{english}' already exists in the database"}, 409
 
 
-def check_the_problem(image_is_unique, word_is_unique, english, image):
+def check_the_problem(word_is_unique, english, image):
 
-    if not image_is_unique and not word_is_unique:
-
-        return {"message": f"both the word '{english}' "
-                           f"and the image '{image}' already exist in the database"}, 409
-    elif not word_is_unique:
+    if not word_is_unique:
 
         return {"message": f"the word '{english}' already exists in the database"}, 409
-    elif not image_is_unique:
 
-        return {"message": f"the image '{image}' already exists in the database"}, 409
     else:
 
         return {"message": f"the name '{image}' is not allowed"}, 409
@@ -116,10 +113,9 @@ def post_word():
             image = secure_filename(image_file.filename)
             mimetype = request.files["image"].mimetype
 
-            image_is_unique = image_not_exist(image)
             word_is_unique = not_exist(english)
 
-            if image_is_unique and word_is_unique and is_allowed(image):
+            if word_is_unique and is_allowed(image):
 
                 image_file.save(os.path.join(application.config["UPLOAD_FOLDER"], image))
 
@@ -127,7 +123,7 @@ def post_word():
                 return initialize_word(new_word)
 
             else:
-                return check_the_problem(image_is_unique, word_is_unique, english, image)
+                return check_the_problem(word_is_unique, english, image)
 
         except KeyError:
             return insert_word(form)
