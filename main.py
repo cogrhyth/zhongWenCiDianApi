@@ -1,6 +1,8 @@
 from database.configuration import ALLOWED_EXTENSIONS, application
 from database.database import initialize_database, database
 from models.word import Word
+from os import listdir
+from os.path import isfile, join
 from flask import request, send_from_directory
 from werkzeug.utils import secure_filename
 import os
@@ -45,6 +47,33 @@ def get_image(image_name):
     upload_folder = os.path.join(application.root_path, application.config["UPLOAD_FOLDER"])
 
     return send_from_directory(directory=upload_folder, path=image_name)
+
+
+@application.route("/get_resources", methods=["GET"])
+def get_resources():
+
+    resources = os.path.join(application.root_path, application.config["UPLOAD_FOLDER"])
+
+    files = []
+
+    for file in listdir(resources):
+
+        if isfile:
+            file = (join(resources, file))
+
+        files.append({"file": file})
+
+    return {"files": files}, 200
+
+
+@application.route("/delete_image/<path:image_name>", methods=["DELETE"])
+def delete_image(image_name):
+
+    resources = os.path.join(application.root_path, application.config["UPLOAD_FOLDER"])
+
+    os.remove(os.path.join(resources, image_name))
+
+    return "The file was deleted", 200
 
 
 def initialize_word(new_word):
