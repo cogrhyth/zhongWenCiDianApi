@@ -146,7 +146,9 @@ def post_word():
 
             if word_is_unique and is_allowed(image):
 
-                image_file.save(os.path.join(application.config["UPLOAD_FOLDER"], image))
+                resources = os.path.join(application.root_path, application.config["UPLOAD_FOLDER"])
+
+                image_file.save(os.path.join(resources, image))
 
                 new_word = Word(english, pinyin, plain_pinyin, han_zi, image, mimetype)
                 return initialize_word(new_word)
